@@ -1,10 +1,14 @@
 package com.william.fitnesstracker;
 
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -13,7 +17,6 @@ public class ImcActivity extends AppCompatActivity {
 
     private EditText et_height;
     private EditText et_weight;
-    private Button btn_calc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +25,8 @@ public class ImcActivity extends AppCompatActivity {
 
         et_height = findViewById(R.id.et_height);
         et_weight = findViewById(R.id.et_weight);
-        btn_calc = findViewById(R.id.btn_calc);
+
+        Button btn_calc = findViewById(R.id.btn_calc);
 
         btn_calc.setOnClickListener(view -> {
             if (!validate()) {
@@ -40,8 +44,19 @@ public class ImcActivity extends AppCompatActivity {
 
             int imcResponseID = imcResponse(result);
 
-            Toast.makeText(this, imcResponseID, Toast.LENGTH_LONG).show();
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.imc_response, result))
+                    .setMessage(imcResponseID)
+                    .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
 
+                    })
+                    .create();
+
+            dialog.show();
+
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(et_height.getWindowToken(),0);
+            inputMethodManager.hideSoftInputFromWindow(et_weight.getWindowToken(), 0);
         });
     }
 
