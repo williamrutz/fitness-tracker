@@ -1,13 +1,17 @@
 package com.william.fitnesstracker;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,6 +52,17 @@ public class ImcActivity extends AppCompatActivity {
                     .setTitle(getString(R.string.imc_response, result))
                     .setMessage(imcResponseID)
                     .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                    })
+                    .setNegativeButton(R.string.save, (dialogInterface, i) -> {
+                        new Thread(() -> {
+                            long calcId = SqlHelper.getInstance(ImcActivity.this).addItem("imc", result);
+                            runOnUiThread(() -> {
+                                if (calcId > 0) {
+                                    Toast.makeText(ImcActivity.this, R.string.saved, Toast.LENGTH_LONG).show();
+                                    openListCalcActivity();
+                                }
+                            });
+                        }).start();
 
                     })
                     .create();
@@ -55,9 +70,33 @@ public class ImcActivity extends AppCompatActivity {
             dialog.show();
 
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            inputMethodManager.hideSoftInputFromWindow(et_height.getWindowToken(),0);
+            inputMethodManager.hideSoftInputFromWindow(et_height.getWindowToken(), 0);
             inputMethodManager.hideSoftInputFromWindow(et_weight.getWindowToken(), 0);
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_list:
+                openListCalcActivity();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    private void openListCalcActivity(){
+        Intent intent = new Intent(ImcActivity.this, ListCalcActivity.class);
+        intent.putExtra("type", "imc");
+        startActivity(intent);
     }
 
     @StringRes
